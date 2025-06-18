@@ -6,12 +6,14 @@
 #include <random>
 #include <sstream>
 
+// Constructor initializes the board with given dimensions and mine count
 Board::Board(int width, int height, int mineCount)
     : width(width), height(height), mineCount(mineCount)
 {
     tiles.resize(width * height);
 }
 
+// Generate the board with mines and adjacent mine counts
 void Board::generate()
 {
     // Clear board
@@ -54,6 +56,7 @@ void Board::generate()
     std::cout << "Board generated!" << std::endl;
 }
 
+// Reset the board with new dimensions and mine count
 void Board::reset(int width, int height, int mineCount)
 {
     this->width = width;
@@ -63,6 +66,7 @@ void Board::reset(int width, int height, int mineCount)
     generate();
 }
 
+// Print the board to console
 void Board::printBoard() const
 {
     for (int y = 0; y < height; ++y)
@@ -77,6 +81,14 @@ void Board::printBoard() const
                 else
                     std::cout << tile.adjacentMines << " ";
             }
+            else if (tile.state == TileState::Flagged)
+            {
+                std::cout << "F ";
+            }
+            else if (tile.state == TileState::Exploded)
+            {
+                std::cout << "X "; // Exploded tile
+			}
             else
             {
                 std::cout << ". ";
@@ -88,17 +100,20 @@ void Board::printBoard() const
 
 void Board::reveal(int x, int y)
 {
-	//std::cout << "reveal(" << x << ", " << y << ")" << std::endl;
     // Out of bounds, do nothing
     if (x < 0 || x >= width || y < 0 || y >= height)
         return;
         //throw std::out_of_range("Board::reveal(): x or y out of range");
 
     Tile& tile = (*this)(x, y);
+
+    if (tile.state == TileState::Revealed)
+        return;
     
     if (tile.hasMine) {
 		tile.state = TileState::Exploded;
     } else {
+	    //std::cout << "reveal(" << x << ", " << y << ")" << std::endl;
 		tile.state = TileState::Revealed;
         // If no adjacent mines, reveal adjacent tiles
         //std::cout << "Adjacent Mines: " << tile.adjacentMines << std::endl;
@@ -116,7 +131,7 @@ void Board::reveal(int x, int y)
         } 
     }
 }
-
+// Flag or unflag a tile
 void Board::flag(int x, int y)
 {
     if (x < 0 || x >= width || y < 0 || y >= height)
@@ -138,6 +153,7 @@ void Board::flag(int x, int y)
 	}
 }
 
+// Count adjacent mines for a tile at (x, y)
 int Board::countAdjacentMines(int x, int y) const
 {
     if (x < 0 || x >= width || y < 0 || y >= height)
@@ -163,6 +179,7 @@ int Board::countAdjacentMines(int x, int y) const
     return count;
 }
 
+// Access tile at (x, y) with bounds checking
 Tile& Board::operator()(int x, int y)
 {
     if (x < 0 || x >= width || y < 0 || y >= height)
@@ -175,6 +192,7 @@ Tile& Board::operator()(int x, int y)
     return tiles[y * width + x];
 }
 
+// Access tile at (x, y) with bounds checking (const version)
 const Tile& Board::operator()(int x, int y) const
 {
     if (x < 0 || x >= width || y < 0 || y >= height)
